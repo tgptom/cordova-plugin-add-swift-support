@@ -192,8 +192,9 @@ const getPlatformVersionsFromFileSystem = (context, projectRoot) => {
   const cordovaUtil = context.requireCordovaModule('cordova-lib/src/cordova/util');
   const platformsOnFs = cordovaUtil.listPlatforms(projectRoot);
   const platformVersions = platformsOnFs.map(platform => {
-    const script = path.join(projectRoot, 'platforms', platform, 'cordova', 'version');
+  if (platform === 'ios') {
     return new Promise((resolve, reject) => {
+      const script = path.join(projectRoot, 'platforms', platform, 'cordova', 'version');
       childProcess.exec('"' + script + '"', {}, (error, stdout, _) => {
         if (error) {
           reject(error);
@@ -208,6 +209,12 @@ const getPlatformVersionsFromFileSystem = (context, projectRoot) => {
       console.log(error);
       process.exit(1);
     });
+  } else {
+    return new Promise((resolve, reject) => {
+      //-- Version is ignored if not iOS so getting the version doesn't apply
+      resolve({ platform, version: "" });
+    });
+  }  
   });
 
   return Promise.all(platformVersions);
